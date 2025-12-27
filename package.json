@@ -1,0 +1,57 @@
+{
+    "package_version": 2,
+    "version": "1.0.0",
+    "name": "prefab-binding-generator",
+    "title": "Prefab 绑定代码生成器",
+    "description": "为 Prefab 生成组件绑定代码，自动获取 Label、Button、EditBox 等基础组件",
+    "author": "Developer",
+    "editor": ">=3.8.0",
+    "main": "./dist/main.js",
+    "panels": {
+        "default": {
+            "title": "Prefab 绑定生成器",
+            "type": "dockable",
+            "main": "./dist/panels/default/index.js",
+            "size": {
+                "min-width": 400,
+                "min-height": 300,
+                "width": 500,
+                "height": 400
+            }
+        }
+    },
+    "contributions": {
+        "menu": [
+            {
+                "path": "扩展",
+                "label": "Prefab 绑定生成器",
+                "message": "open-panel"
+            }
+        ],
+        "assets": {
+            "menu": {
+                "methods": "./dist/assets-menu.js",
+                "assetMenu": "onAssetMenu"
+            }
+        },
+        "messages": {
+            "open-panel": {
+                "methods": ["openPanel"]
+            },
+            "generate-binding": {
+                "methods": ["generateBinding"]
+            },
+            "generate-binding-from-asset": {
+                "methods": ["generateBindingFromAsset"]
+            }
+        }
+    },
+    "scripts": {
+        "build": "tsc -b",
+        "watch": "tsc -w"
+    },
+    "devDependencies": {
+        "@types/node": "^18.0.0",
+        "typescript": "^5.0.0"
+    }
+}
