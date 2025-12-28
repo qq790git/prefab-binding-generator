@@ -33,6 +33,9 @@ function parsePrefab(data, name) {
             paths.shift();
         return paths.join('/');
     };
+    // 第一遍：收集所有组件信息，统计简单名称出现次数
+    const componentInfos = [];
+    const simpleNameCount = new Map();
     data.forEach((item) => {
         var _a;
         if (!item.__type__ || !SUPPORTED_COMPONENTS.includes(item.__type__))
@@ -44,11 +47,34 @@ function parsePrefab(data, name) {
         if (!node)
             return;
         const type = item.__type__.replace('cc.', '');
-        let prop = node.name.replace(/[^a-zA-Z0-9_]/g, '_');
-        if (/^\d/.test(prop))
-            prop = '_' + prop;
-        prop += '_' + type.charAt(0).toLowerCase() + type.slice(1);
-        result.components.push({ path: getPath(nodeId), node: node.name, type, prop });
+        const nodePath = getPath(nodeId);
+        // 简单名称：节点名 + 组件类型
+        let simpleProp = node.name.replace(/[^a-zA-Z0-9_]/g, '_');
+        if (/^\d/.test(simpleProp))
+            simpleProp = '_' + simpleProp;
+        simpleProp += '_' + type.charAt(0).toLowerCase() + type.slice(1);
+        componentInfos.push({ path: nodePath, nodeName: node.name, type, simpleProp });
+        simpleNameCount.set(simpleProp, (simpleNameCount.get(simpleProp) || 0) + 1);
+    });
+    // 第二遍：生成最终属性名
+    const usedProps = new Map();
+    componentInfos.forEach((info) => {
+        let finalProp;
+        if (simpleNameCount.get(info.simpleProp) > 1) {
+            // 有重复，使用路径 + 序号
+            let pathProp = info.path.replace(/[^a-zA-Z0-9_]/g, '_');
+            if (/^\d/.test(pathProp))
+                pathProp = '_' + pathProp;
+            pathProp += '_' + info.type.charAt(0).toLowerCase() + info.type.slice(1);
+            const count = usedProps.get(pathProp) || 0;
+            finalProp = count > 0 ? pathProp + '_' + count : pathProp;
+            usedProps.set(pathProp, count + 1);
+        }
+        else {
+            // 无重复，使用简单名称
+            finalProp = info.simpleProp;
+        }
+        result.components.push({ path: info.path, node: info.nodeName, type: info.type, prop: finalProp });
     });
     return result;
 }
